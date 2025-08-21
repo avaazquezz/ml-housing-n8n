@@ -15,9 +15,12 @@ services:
     volumes:
       - ./model:/app/model
     depends_on:
-      - trainer
+      trainer:
+        condition: service_completed_successfully
     networks:
       - appnet
+    environment:
+      - MODEL_WAIT_TIMEOUT=60
 
   n8n:
     image: n8nio/n8n:latest
