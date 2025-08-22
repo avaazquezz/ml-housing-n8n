@@ -1,0 +1,127 @@
+{
+  "name": "housing-predict-webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "housing-predict",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "09fae72b-3bde-4f6b-8329-86e3c9624c02",
+      "name": "Webhook",
+      "webhookId": "261b9350-caf2-4a98-be6e-95c0996899e3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/predict",
+        "sendBody": true,
+        "contentType": "=json",
+        "specifyBody": "=keypair",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "MedInc",
+              "value": "={{$json[\"body\"][\"MedInc\"]}}"
+            },
+            {
+              "name": "HouseAge",
+              "value": "={{$json[\"body\"][\"HouseAge\"]}}"
+            },
+            {
+              "name": "AveRooms",
+              "value": "={{$json[\"body\"][\"AveRooms\"]}}"
+            },
+            {
+              "name": "AveBedrms",
+              "value": "={{$json[\"body\"][\"AveBedrms\"]}}"
+            },
+            {
+              "name": "Population",
+              "value": "={{$json[\"body\"][\"Population\"]}}"
+            },
+            {
+              "name": "AveOccup",
+              "value": "={{$json[\"body\"][\"AveOccup\"]}}"
+            },
+            {
+              "name": "Latitude",
+              "value": "={{$json[\"body\"][\"Latitude\"]}}"
+            },
+            {
+              "name": "Longitude",
+              "value": "={{$json[\"body\"][\"Longitude\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "937f6c81-eda4-4707-8fe5-0599393879d4",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseKey": "={{$node[\"HTTP Request\"].json}}"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "34eff6a5-61f0-4770-98c4-11c06de40147",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "71c5e8ef-e9a7-4c43-9aab-d2167522871d",
+  "meta": {
+    "instanceId": "8e2e3aa9feb8fc4bfc6d62ebb606ef882d2f643bb34f97b62a6804e73f5c493a"
+  },
+  "id": "ltmLvqmW7QbGTWpz",
+  "tags": []
+}
