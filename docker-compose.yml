@@ -27,6 +27,7 @@ services:
     ports:
       - "5678:5678"
     environment:
+      - WEBHOOK_URL=https://653fe62d6d95.ngrok-free.app
       - GENERIC_TIMEZONE=Europe/Copenhagen
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=admin
