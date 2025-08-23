@@ -1,5 +1,5 @@
 {
-  "name": "My workflow",
+  "name": "Workflow_HPP-ML",
   "nodes": [
     {
       "parameters": {
@@ -8,54 +8,56 @@
         ],
         "additionalFields": {}
       },
-      "id": "39c58269-8e98-445e-bcfb-65d38212c3aa",
+      "id": "b3528dec-3b54-4be8-a385-bc2a29bddddf",
       "name": "Telegram Trigger",
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1,
       "position": [
         -560,
-        112
+        160
       ],
       "webhookUrl": "your-ngrok-url-here",
       "webhookId": "ff19dbe2-88ee-4a12-b6d1-c50c02b69339",
       "credentials": {
         "telegramApi": {
-          "id": "MVXBBJhbbrytqftq",
+          "id": "LrsVa9MWpFhvnFll",
           "name": "Telegram account"
         }
       }
     },
     {
       "parameters": {
-        "functionCode": "const message = $json[\"message\"][\"text\"].trim(); \nlet mode;\n\nif (message === '/start') {\n  mode = 'welcome';\n} else if (/^\\d+([,.]\\d+)*([,\\s]\\d+([,.]\\d+)*)*$/.test(message)) {\n  mode = 'predict';\n} else {\n  mode = 'error';\n}\n\nreturn [{\n  json: {\n    chat_id: $json[\"message\"][\"chat\"][\"id\"],\n    message,\n    mode: mode.trim() \n  }\n}];\n"
+        "functionCode": "// Code node: detectar modo (welcome / predict / error)\n// Lee correctamente tanto message.text (Telegram) como message directo.\nconst message = ($json?.message?.text ?? $json?.message ?? $json?.text ?? \"\").toString().trim();\n\nlet mode = \"\";\nconst m = message.toLowerCase();\n\n// /start -> welcome\nif (m === \"/start\") {\n  mode = \"welcome\";\n} \n// Predict -> exactamente 8 números separados por comas (acepta decimales con . o , y signos -)\nelse if (/^\\s*-?\\d+([.,]\\d+)?\\s*(,\\s*-?\\d+([.,]\\d+)?\\s*){7}$/.test(message)) {\n  mode = \"predict\";\n} \n// En cualquier otro caso -> error\nelse {\n  mode = \"error\";\n}\n\nreturn [{\n  json: {\n    chat_id: $json?.message?.chat?.id ?? $json?.chat_id ?? null,\n    message,\n    mode\n  }\n}];\n"
       },
       "name": "Code",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
         -384,
-        112
+        160
       ],
-      "id": "61256dba-e7c5-4de8-a3c0-0f42119171ba"
+      "id": "1520d31e-6a6d-462d-81ab-495f9d8c5fcd"
     },
     {
       "parameters": {
-        "chatId": "={{$json[\"chat_id\"]}}",
-        "text": "Estimated price: €{{$node[\"HTTP Request\"].json[\"prediction\"]}}",
-        "additionalFields": {}
+        "chatId": "={{$node[\"Switch\"].json[\"chat_id\"]}}",
+        "text": "={{$node[\"HTTP Request\"].json[\"message_html\"]}}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
       },
       "name": "Send Prediction",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1,
       "position": [
-        224,
-        -48
+        464,
+        -16
       ],
-      "id": "a85b83cc-0052-4c71-a29c-02cbf2fe6137",
+      "id": "2a9f05b6-055a-4eb6-9ae9-af222f9b9f0a",
       "webhookId": "5e13e30c-4085-4727-a5cd-1c54e29ffb03",
       "credentials": {
         "telegramApi": {
-          "id": "MVXBBJhbbrytqftq",
+          "id": "LrsVa9MWpFhvnFll",
           "name": "Telegram account"
         }
       }
@@ -71,13 +73,13 @@
       "typeVersion": 1,
       "position": [
         64,
-        128
+        176
       ],
-      "id": "0956714f-1141-4703-966c-12697ef40b76",
+      "id": "b959811d-030e-4358-9668-7b52f470c5a6",
       "webhookId": "2bb4e83a-8adf-4492-b0d2-7b15a6377e9d",
       "credentials": {
         "telegramApi": {
-          "id": "MVXBBJhbbrytqftq",
+          "id": "LrsVa9MWpFhvnFll",
           "name": "Telegram account"
         }
       }
@@ -92,17 +94,41 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1,
       "position": [
-        16,
-        336
+        64,
+        384
       ],
-      "id": "667d8943-96b8-4ae0-a662-b6ca1f07bd02",
+      "id": "d37e1ff4-de3c-4041-96e7-c09507a366fc",
       "webhookId": "63d3bcdb-2743-4064-9193-19e0ec3d6b59",
       "credentials": {
         "telegramApi": {
-          "id": "MVXBBJhbbrytqftq",
+          "id": "LrsVa9MWpFhvnFll",
           "name": "Telegram account"
         }
       }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://50c8e604b988.ngrok-free.app/predict-from-string",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "=input",
+              "value": "={{$json.message}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        256,
+        -16
+      ],
+      "id": "14fdab72-188a-42c1-b586-0a3c18c858be",
+      "name": "HTTP Request"
     },
     {
       "parameters": {
@@ -118,13 +144,13 @@
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json[\"mode\"] }}  ",
-                    "rightValue": "=predict",
+                    "leftValue": "={{$json[\"mode\"]}}",
+                    "rightValue": "predict",
                     "operator": {
                       "type": "string",
                       "operation": "equals"
                     },
-                    "id": "2cfaaf32-7e12-4e3c-849f-aaf8af5353c9"
+                    "id": "e8d5ac5a-77da-4a32-b7a8-09a6ad1c5a5c"
                   }
                 ],
                 "combinator": "and"
@@ -140,9 +166,9 @@
                 },
                 "conditions": [
                   {
-                    "id": "c09f9412-1708-4f67-b611-94ccbc019f5e",
-                    "leftValue": "={{ $json[\"mode\"] }}  ",
-                    "rightValue": "=welcome",
+                    "id": "ce92b40e-5fa9-4f6b-86ed-b254a075a943",
+                    "leftValue": "={{$json[\"mode\"]}}",
+                    "rightValue": "welcome",
                     "operator": {
                       "type": "string",
                       "operation": "equals",
@@ -163,9 +189,9 @@
                 },
                 "conditions": [
                   {
-                    "id": "aa2a1acf-e684-4a62-80e4-c0e82f254994",
-                    "leftValue": "={{ $json[\"mode\"] }}  ",
-                    "rightValue": "=error",
+                    "id": "b55b564d-4fba-4d28-be11-6723485212c4",
+                    "leftValue": "={{$json[\"mode\"]}}",
+                    "rightValue": "error",
                     "operator": {
                       "type": "string",
                       "operation": "equals",
@@ -185,37 +211,44 @@
       "typeVersion": 3.2,
       "position": [
         -176,
-        96
+        160
       ],
-      "id": "343c9b1d-c767-4503-bf1f-df9d08d2d211",
+      "id": "a351c6ab-a444-4601-96e0-c64b8b6cf207",
       "name": "Switch"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "http://api:8000/predict-from-string",
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "=input",
-              "value": "={{$json.message}}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        0,
-        -48
-      ],
-      "id": "9a8b4fbc-f6c3-47cb-a593-f5d73074cb7d",
-      "name": "HTTP Request"
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Telegram Trigger": [
+      {
+        "json": {
+          "update_id": 525909693,
+          "message": {
+            "message_id": 48,
+            "from": {
+              "id": 1140982759,
+              "is_bot": false,
+              "first_name": "Adri",
+              "language_code": "es"
+            },
+            "chat": {
+              "id": 1140982759,
+              "first_name": "Adri",
+              "type": "private"
+            },
+            "date": 1755972158,
+            "text": "/start",
+            "entities": [
+              {
+                "offset": 0,
+                "length": 6,
+                "type": "bot_command"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
   "connections": {
     "Telegram Trigger": {
       "main": [
@@ -233,6 +266,17 @@
         [
           {
             "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Send Prediction",
             "type": "main",
             "index": 0
           }
@@ -263,28 +307,17 @@
           }
         ]
       ]
-    },
-    "HTTP Request": {
-      "main": [
-        [
-          {
-            "node": "Send Prediction",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "59ab7c70-a389-4374-882a-34141bf35b6d",
+  "versionId": "828abecf-04e3-447e-9f09-af3d38fa947a",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "809b52874c59e921a7ac865fec233b962ffa99093ac334c8fced28793228cfcf"
+    "instanceId": "4e03bbc35bd7e3c702e29bc16f6e4d62f3b0e48534cbb8d263c08c203c7e9826"
   },
-  "id": "dNVhXtWOKYVm9yew",
+  "id": "ii3pmL1eQc5YiCP8",
   "tags": []
 }
