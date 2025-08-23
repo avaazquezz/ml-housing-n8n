@@ -22,18 +22,6 @@ services:
     environment:
       - MODEL_WAIT_TIMEOUT=60
 
-  n8n:
-    image: n8nio/n8n:latest
-    ports:
-      - "5678:5678"
-    environment:
-      - GENERIC_TIMEZONE=Europe/Copenhagen
-      - N8N_BASIC_AUTH_ACTIVE=true
-      - N8N_BASIC_AUTH_USER=admin
-      - N8N_BASIC_AUTH_PASSWORD=1234
-    networks:
-      - appnet
-
 networks:
   appnet:
     driver: bridge

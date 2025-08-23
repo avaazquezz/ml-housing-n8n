@@ -112,3 +112,38 @@ def reload_model():
         return {"status": "success", "message": "Model reloaded"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to reload model: {str(e)}")
+
+
+
+class PredictStringInput(BaseModel):
+    input: str
+
+@app.post("/predict-from-string")
+def predict_from_string(data: PredictStringInput):
+    """Predict from a single comma-separated string input"""
+    if model is None:
+        raise HTTPException(status_code=503, detail="Model not loaded")
+
+    try:
+        parts = list(map(float, data.input.split(",")))
+        if len(parts) != 8:
+            raise ValueError("Input must contain exactly 8 numerical values")
+
+        columns = [
+            "MedInc", "HouseAge", "AveRooms", "AveBedrms",
+            "Population", "AveOccup", "Latitude", "Longitude"
+        ]
+        df = pd.DataFrame([parts], columns=columns)
+
+        pred = model.predict(df)[0]
+        return {
+            "prediction": round(float(pred), 2),
+            "status": "success"
+        }
+    
+    except ValueError as ve:
+        logger.warning(f"Validation error: {ve}")
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        logger.error(f"Prediction error: {e}")
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
