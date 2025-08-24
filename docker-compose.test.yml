@@ -1,0 +1,56 @@
+services:
+  test-trainer:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    command: ["python", "scripts/train.py"]
+    volumes:
+      - ./model:/app/model:rw
+      - ./tests:/app/tests:ro
+    environment:
+      - MODEL_WAIT_TIMEOUT=30
+    networks:
+      - test-network
+    user: root  # Run as root for training to avoid permission issues
+
+  test-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["pytest", "tests/", "-v", "--tb=short"]
+    volumes:
+      - ./model:/app/model:ro
+      - ./tests:/app/tests:ro
+      - ./app:/app/app:ro
+      - ./scripts:/app/scripts:ro
+    depends_on:
+      test-trainer:
+        condition: service_completed_successfully
+    environment:
+      - MODEL_WAIT_TIMEOUT=30
+      - PYTHONPATH=/app
+    networks:
+      - test-network
+
+  test-integration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["pytest", "tests/test_integration.py", "-v", "-m", "not integration"]
+    volumes:
+      - ./model:/app/model:ro
+      - ./tests:/app/tests:ro
+      - ./app:/app/app:ro
+      - ./scripts:/app/scripts:ro
+    depends_on:
+      test-trainer:
+        condition: service_completed_successfully
+    environment:
+      - MODEL_WAIT_TIMEOUT=30
+      - PYTHONPATH=/app
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge
