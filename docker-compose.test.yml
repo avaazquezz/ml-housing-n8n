@@ -5,12 +5,13 @@ services:
       dockerfile: Dockerfile
     command: ["python", "scripts/train.py"]
     volumes:
-      - ./model:/app/model
-      - ./tests:/app/tests
+      - ./model:/app/model:rw
+      - ./tests:/app/tests:ro
     environment:
       - MODEL_WAIT_TIMEOUT=30
     networks:
       - test-network
+    user: root  # Run as root for training to avoid permission issues
 
   test-api:
     build:
@@ -18,10 +19,10 @@ services:
       dockerfile: Dockerfile
     command: ["pytest", "tests/", "-v", "--tb=short"]
     volumes:
-      - ./model:/app/model
-      - ./tests:/app/tests
-      - ./app:/app/app
-      - ./scripts:/app/scripts
+      - ./model:/app/model:ro
+      - ./tests:/app/tests:ro
+      - ./app:/app/app:ro
+      - ./scripts:/app/scripts:ro
     depends_on:
       test-trainer:
         condition: service_completed_successfully
@@ -37,10 +38,10 @@ services:
       dockerfile: Dockerfile
     command: ["pytest", "tests/test_integration.py", "-v", "-m", "not integration"]
     volumes:
-      - ./model:/app/model
-      - ./tests:/app/tests
-      - ./app:/app/app
-      - ./scripts:/app/scripts
+      - ./model:/app/model:ro
+      - ./tests:/app/tests:ro
+      - ./app:/app/app:ro
+      - ./scripts:/app/scripts:ro
     depends_on:
       test-trainer:
         condition: service_completed_successfully

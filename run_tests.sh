@@ -87,10 +87,17 @@ case "${1:-all}" in
         ;;
     "docker")
         print_status "Running tests with Docker..."
+        
+        # Create model directory with proper permissions
+        mkdir -p model
+        chmod -R 755 model/ tests/ app/ scripts/ 2>/dev/null || true
+        
         if command -v "docker compose" &> /dev/null; then
+            docker compose -f docker-compose.test.yml down --remove-orphans --volumes 2>/dev/null || true
             docker compose -f docker-compose.test.yml up --build --abort-on-container-exit
             docker compose -f docker-compose.test.yml down
         elif command -v docker-compose &> /dev/null; then
+            docker-compose -f docker-compose.test.yml down --remove-orphans --volumes 2>/dev/null || true
             docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
             docker-compose -f docker-compose.test.yml down
         else
