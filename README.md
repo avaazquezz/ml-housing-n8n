@@ -3,7 +3,7 @@
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104%2B-green)](https://fastapi.tiangolo.com/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)](https://www.docker.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
 
 > **A complete end-to-end machine learning pipeline that predicts California housing prices through a Telegram bot interface powered by n8n workflows.**
 
@@ -68,15 +68,11 @@ cd ml-housing-n8n
 
 ### 2. Run Tests (Recommended First Step)
 ```bash
-# Test everything works with Docker (new Docker CLI)
+# Test everything with Docker
 docker compose -f docker-compose.test.yml up --build
 
-# Or with legacy Docker Compose
-docker-compose -f docker-compose.test.yml up --build
-
-# Clean up
+# Clean up test containers
 docker compose -f docker-compose.test.yml down
-# OR: docker-compose -f docker-compose.test.yml down
 ```
 
 ### 3. Environment Setup
@@ -98,20 +94,20 @@ API_PORT=8000
 ### 4. Deploy with Docker (Recommended)
 
 ```bash
-# Build and start services (new Docker CLI)
+# Build and start all services
 docker compose up -d
 
-# Or with legacy Docker Compose
-docker-compose up -d
-
-# Check service status
+# Check service status (trainer will show "Exited" - this is normal)
 docker compose ps
-# OR: docker-compose ps
 
 # View logs
 docker compose logs -f api
-# OR: docker-compose logs -f api
+
+# Stop services
+docker compose down
 ```
+
+**Note**: The `trainer` service will show "Exited" status after completing model training - this is expected behavior.
 
 ### 5. Local Development Setup
 
@@ -139,9 +135,6 @@ curl -X POST "http://localhost:8000/predict-from-string" \
 
 # Run tests to verify everything works
 docker compose -f docker-compose.test.yml up --build
-# OR: docker-compose -f docker-compose.test.yml up --build
-```
-  -d '{"input":"4.2,15,5.3,1.2,1800,3.1,34.05,-118.25"}'
 ```
 
 ## 📚 API Documentation
@@ -377,31 +370,54 @@ return [{
 
 ### Services Overview
 
-- **trainer**: Trains the ML model and saves it
-- **api**: Serves the FastAPI prediction service
+```yaml
+# docker-compose.yml
+services:
+  trainer:
+    build: .
+    command: ["python", "scripts/train.py"]
+    volumes:
+      - ./model:/app/model
+    networks:
+      - appnet
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./model:/app/model:ro
+    depends_on:
+      trainer:
+        condition: service_completed_successfully
+    networks:
+      - appnet
+    environment:
+      - MODEL_WAIT_TIMEOUT=60
+```
+
+### Service Behavior
+
+- **trainer**: Runs once to train the model and exits (normal behavior)
+- **api**: Stays running to serve prediction requests
 
 ### Commands
 
 ```bash
-# Build and start
+# Build and start services
 docker compose up -d
-# OR: docker-compose up -d
 
 # Rebuild services
 docker compose up -d --build
-# OR: docker-compose up -d --build
 
 # View logs
 docker compose logs -f
-# OR: docker-compose logs -f
 
 # Stop services
 docker compose down
-# OR: docker-compose down
 
-# Clean up
+# Clean up everything
 docker compose down -v --remove-orphans
-# OR: docker-compose down -v --remove-orphans
 ```
 
 ## 🔍 Model Details
@@ -431,10 +447,9 @@ ml-housing-n8n/
 ├── app/
 │   └── main.py              # FastAPI application
 ├── model/
-│   └── model.joblib         # Trained ML model
+│   └── model.joblib         # Trained ML model (generated)
 ├── n8n/
-│   ├── Workflow_HPP-ML.json # n8n workflow configuration
-│   └── README-n8n.md        # n8n setup instructions
+│   └── Workflow_HPP-ML.json # n8n workflow configuration
 ├── scripts/
 │   └── train.py             # Model training script
 ├── tests/                   # Test suite
@@ -451,6 +466,7 @@ ml-housing-n8n/
 ├── requirements-test.txt    # Testing dependencies
 ├── pytest.ini              # Pytest configuration
 ├── run_tests.sh            # Local test runner script
+├── .gitignore              # Git ignore rules
 └── README.md               # This file
 ```
 
@@ -508,14 +524,12 @@ pytest --cov=app --cov=scripts --cov-report=html
 ```bash
 # Run tests in Docker environment (RECOMMENDED)
 docker compose -f docker-compose.test.yml up --build
-# OR: docker-compose -f docker-compose.test.yml up --build
 
 # Alternative with script (auto-detects Docker version)
 ./run_tests.sh docker
 
 # Clean up after testing
 docker compose -f docker-compose.test.yml down
-# OR: docker-compose -f docker-compose.test.yml down
 ```
 
 ### Test Results Example
@@ -537,25 +551,6 @@ test-api-1         | tests/test_integration.py::TestAPIIntegration::test_api_thr
 - ✅ **Performance** - Response time and concurrency
 - ✅ **Error Handling** - Edge cases and failure scenarios
 
-### Using Makefile
-
-```bash
-# Install dependencies
-make install-dev
-
-# Run all tests
-make test
-
-# Run tests with coverage
-make coverage
-
-# Run code quality checks
-make lint
-
-# Format code
-make format
-```
-
 ### Test Coverage
 
 The project maintains >80% test coverage across all components:
@@ -567,7 +562,6 @@ open htmlcov/index.html  # View in browser
 
 # Quick coverage check with Docker
 docker compose -f docker-compose.test.yml run test-api pytest --cov=app --cov=scripts
-# OR: docker-compose -f docker-compose.test.yml run test-api pytest --cov=app --cov=scripts
 ```
 
 **Coverage Breakdown:**
@@ -635,7 +629,6 @@ pytest -m "not slow" tests/
 
 # Test with debug output
 docker compose -f docker-compose.test.yml up --build --no-deps test-api
-# OR: docker-compose -f docker-compose.test.yml up --build --no-deps test-api
 ```
 
 **Performance Optimization:**
@@ -650,19 +643,19 @@ pytest -n auto tests/
 pytest --durations=10 tests/
 ```
 
-### Code Style
+### Code Style & Testing
 
 ```bash
-# Install formatting tools
-pip install black isort flake8 mypy
+# Run all tests
+pytest -v
 
-# Format code
-black app/ scripts/ tests/
-isort app/ scripts/ tests/
+# Run with coverage
+pytest --cov=app --cov=scripts --cov-report=html
 
-# Lint code
-flake8 app/ scripts/ tests/
-mypy app/ scripts/ --ignore-missing-imports
+# Run specific test types
+pytest tests/test_api.py -v
+pytest tests/test_model.py -v
+pytest tests/test_integration.py -v
 ```
 
 ## 📊 Test Architecture
@@ -684,7 +677,7 @@ graph TD
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ## 🤝 Contributing
 
@@ -698,7 +691,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Issues**: [GitHub Issues](https://github.com/avaazquezz/ml-housing-n8n/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/avaazquezz/ml-housing-n8n/discussions)
-- **Documentation**: Check the `n8n/README-n8n.md` for n8n specific setup
 
 ## 🙏 Acknowledgments
 
