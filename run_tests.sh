@@ -87,11 +87,14 @@ case "${1:-all}" in
         ;;
     "docker")
         print_status "Running tests with Docker..."
-        if command -v docker-compose &> /dev/null; then
+        if command -v "docker compose" &> /dev/null; then
+            docker compose -f docker-compose.test.yml up --build --abort-on-container-exit
+            docker compose -f docker-compose.test.yml down
+        elif command -v docker-compose &> /dev/null; then
             docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
             docker-compose -f docker-compose.test.yml down
         else
-            print_error "Docker Compose not found"
+            print_error "Neither 'docker compose' nor 'docker-compose' found"
             exit 1
         fi
         ;;

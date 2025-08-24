@@ -62,7 +62,14 @@ clean:
 	find . -type f -name "*.pyc" -delete
 
 docker-test:
-	docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
+	@if command -v "docker compose" >/dev/null 2>&1; then \
+		docker compose -f docker-compose.test.yml up --build --abort-on-container-exit; \
+	elif command -v docker-compose >/dev/null 2>&1; then \
+		docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit; \
+	else \
+		echo "Error: Neither 'docker compose' nor 'docker-compose' found"; \
+		exit 1; \
+	fi
 
 train-model:
 	python scripts/train.py
@@ -71,13 +78,25 @@ run-api:
 	uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 docker-up:
-	docker-compose up -d
+	@if command -v "docker compose" >/dev/null 2>&1; then \
+		docker compose up -d; \
+	else \
+		docker-compose up -d; \
+	fi
 
 docker-down:
-	docker-compose down
+	@if command -v "docker compose" >/dev/null 2>&1; then \
+		docker compose down; \
+	else \
+		docker-compose down; \
+	fi
 
 docker-logs:
-	docker-compose logs -f
+	@if command -v "docker compose" >/dev/null 2>&1; then \
+		docker compose logs -f; \
+	else \
+		docker-compose logs -f; \
+	fi
 
 validate-model:
 	python -c "import joblib; model = joblib.load('model/model.joblib'); print('Model loaded successfully')"

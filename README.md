@@ -70,11 +70,15 @@ cd ml-housing-n8n
 
 ### 2. Run Tests (Recommended First Step)
 ```bash
-# Test everything works with Docker
+# Test everything works with Docker (new Docker CLI)
+docker compose -f docker-compose.test.yml up --build
+
+# Or with legacy Docker Compose
 docker-compose -f docker-compose.test.yml up --build
 
 # Clean up
-docker-compose -f docker-compose.test.yml down
+docker compose -f docker-compose.test.yml down
+# OR: docker-compose -f docker-compose.test.yml down
 ```
 
 ### 3. Environment Setup
@@ -96,14 +100,19 @@ API_PORT=8000
 ### 4. Deploy with Docker (Recommended)
 
 ```bash
-# Build and start services
+# Build and start services (new Docker CLI)
+docker compose up -d
+
+# Or with legacy Docker Compose
 docker-compose up -d
 
 # Check service status
-docker-compose ps
+docker compose ps
+# OR: docker-compose ps
 
 # View logs
-docker-compose logs -f api
+docker compose logs -f api
+# OR: docker-compose logs -f api
 ```
 
 ### 5. Local Development Setup
@@ -131,7 +140,8 @@ curl -X POST "http://localhost:8000/predict-from-string" \
   -d '{"input":"4.2,15,5.3,1.2,1800,3.1,34.05,-118.25"}'
 
 # Run tests to verify everything works
-docker-compose -f docker-compose.test.yml up --build
+docker compose -f docker-compose.test.yml up --build
+# OR: docker-compose -f docker-compose.test.yml up --build
 ```
   -d '{"input":"4.2,15,5.3,1.2,1800,3.1,34.05,-118.25"}'
 ```
@@ -376,19 +386,24 @@ return [{
 
 ```bash
 # Build and start
-docker-compose up -d
+docker compose up -d
+# OR: docker-compose up -d
 
 # Rebuild services
-docker-compose up -d --build
+docker compose up -d --build
+# OR: docker-compose up -d --build
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
+# OR: docker-compose logs -f
 
 # Stop services
-docker-compose down
+docker compose down
+# OR: docker-compose down
 
 # Clean up
-docker-compose down -v --remove-orphans
+docker compose down -v --remove-orphans
+# OR: docker-compose down -v --remove-orphans
 ```
 
 ## 🔍 Model Details
@@ -499,13 +514,15 @@ pytest --cov=app --cov=scripts --cov-report=html
 
 ```bash
 # Run tests in Docker environment (RECOMMENDED)
-docker-compose -f docker-compose.test.yml up --build
+docker compose -f docker-compose.test.yml up --build
+# OR: docker-compose -f docker-compose.test.yml up --build
 
-# Alternative with script
+# Alternative with script (auto-detects Docker version)
 ./run_tests.sh docker
 
 # Clean up after testing
-docker-compose -f docker-compose.test.yml down
+docker compose -f docker-compose.test.yml down
+# OR: docker-compose -f docker-compose.test.yml down
 ```
 
 ### Test Results Example
@@ -556,7 +573,8 @@ pytest --cov=app --cov=scripts --cov-report=html
 open htmlcov/index.html  # View in browser
 
 # Quick coverage check with Docker
-docker-compose -f docker-compose.test.yml run test-api pytest --cov=app --cov=scripts
+docker compose -f docker-compose.test.yml run test-api pytest --cov=app --cov=scripts
+# OR: docker-compose -f docker-compose.test.yml run test-api pytest --cov=app --cov=scripts
 ```
 
 **Coverage Breakdown:**
@@ -623,6 +641,8 @@ def test_api_prediction(client, sample_housing_data):
 | `Docker build fails` | Check Docker daemon and disk space |
 | `Tests timeout` | Increase `MODEL_WAIT_TIMEOUT` in docker-compose |
 | `Permission denied` | Run `chmod +x run_tests.sh` |
+| `docker-compose: command not found` | Use `docker compose` (newer Docker) instead of `docker-compose` |
+| `Docker Compose compatibility` | Our scripts auto-detect and support both versions |
 
 **Debug Commands:**
 ```bash
@@ -639,7 +659,8 @@ pytest tests/test_api.py -v
 pytest -m "not slow" tests/
 
 # Test with debug output
-docker-compose -f docker-compose.test.yml up --build --no-deps test-api
+docker compose -f docker-compose.test.yml up --build --no-deps test-api
+# OR: docker-compose -f docker-compose.test.yml up --build --no-deps test-api
 ```
 
 **Performance Optimization:**
