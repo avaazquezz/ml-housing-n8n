@@ -3,8 +3,6 @@
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104%2B-green)](https://fastapi.tiangolo.com/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue)](https://www.docker.com/)
-[![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen)](https://github.com/avaazquezz/ml-housing-n8n/actions)
-[![Coverage](https://img.shields.io/badge/Coverage-80%25%2B-green)](https://github.com/avaazquezz/ml-housing-n8n)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
 > **A complete end-to-end machine learning pipeline that predicts California housing prices through a Telegram bot interface powered by n8n workflows.**
@@ -444,9 +442,6 @@ ml-housing-n8n/
 │   ├── test_api.py          # API endpoint tests
 │   ├── test_model.py        # ML model tests
 │   └── test_integration.py  # Integration tests
-├── .github/
-│   └── workflows/
-│       └── test.yml         # CI/CD pipeline
 ├── docs/
 │   └── n8n-workflow.md     # n8n workflow documentation
 ├── docker-compose.yml       # Docker services configuration
@@ -455,8 +450,6 @@ ml-housing-n8n/
 ├── requirements.txt         # Python dependencies
 ├── requirements-test.txt    # Testing dependencies
 ├── pytest.ini              # Pytest configuration
-├── .coveragerc             # Coverage configuration
-├── Makefile                # Development commands
 ├── run_tests.sh            # Local test runner script
 └── README.md               # This file
 ```
@@ -591,24 +584,6 @@ docker compose -f docker-compose.test.yml run test-api pytest --cov=app --cov=sc
 | **Model Tests** | 20+ tests | 90% | < 100ms prediction |
 | **Integration** | 15+ tests | 85% | End-to-end < 5s |
 | **Performance** | 10+ tests | 80% | 10+ concurrent users |
-
-### Continuous Integration
-
-Tests run automatically on:
-- ✅ Push to main/develop branches
-- ✅ Pull requests
-- ✅ Multiple Python versions (3.8-3.11)
-- ✅ Docker environment testing
-- ✅ Code quality checks
-- ✅ Security scanning
-
-**CI/CD Pipeline includes:**
-- 🔍 **Linting**: flake8, black, isort
-- 🧪 **Testing**: pytest with coverage
-- 🐳 **Docker**: Multi-stage testing
-- 🔒 **Security**: bandit, safety checks
-- 📊 **Performance**: Load testing
-- 📈 **Reports**: Coverage, security, performance
 
 ### Test Structure
 

@@ -12,9 +12,8 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Ensure model directory exists
-model_dir = os.path.join(os.path.dirname(__file__), "..", "model")
-model_dir = os.path.abspath(model_dir)
+# Use explicit model directory
+model_dir = "/app/model"
 os.makedirs(model_dir, exist_ok=True)
 logger.info(f"Model directory: {model_dir}")
 

@@ -2,7 +2,7 @@
 services:
   trainer:
     build: .
-    command: ["python","scripts/train.py"]
+    command: ["python", "scripts/train.py"]
     volumes:
       - ./model:/app/model
     networks:
@@ -13,7 +13,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./model:/app/model
+      - ./model:/app/model:ro
     depends_on:
       trainer:
         condition: service_completed_successfully
